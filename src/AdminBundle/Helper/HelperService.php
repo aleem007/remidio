@@ -22,24 +22,24 @@ class HelperService
     
     public function createAdmin($username, $password)
     {
-        $entity = new \AdminBundle\Entity\UserRemidio();
-        $admin = $this->em->getRepository('AdminBundle:UserRemidio')->findBy(array('username'=>$username));
-        if (empty($admin)) {
-            $entity->setUsername($username);
-            $entity = $this->setAdminPassword($entity, $password);
-            $this->em->persist($entity);
-            $this->em->flush();
+        $admin = $this->em->getRepository('AdminBundle:UserRemidio')->findOneBy(array('username'=>$username));
+        if (!($admin instanceof \AdminBundle\Entity\UserRemidio)) {
+            $admin = new \AdminBundle\Entity\UserRemidio();
         }
+        $admin->setUsername($username);
+        $admin = $this->setAdminPassword($admin, $password);
+        $this->em->persist($admin);
+        $this->em->flush();
     }
     
-    public function setAdminPassword($entity, $plainPassword)
+    public function setAdminPassword($admin, $plainPassword)
     {
-        $encoder = $this->encoder->getEncoder($entity);
+        $encoder = $this->encoder->getEncoder($admin);
         $salt = \uniqid();
         $password = $encoder->encodePassword($plainPassword, $salt);
-        $entity->setPassword($password);
-        $entity->setSalt($salt);
-        $entity->setRoles("ROLE_ADMIN");
-        return $entity;
+        $admin->setPassword($password);
+        $admin->setSalt($salt);
+        $admin->setRoles("ROLE_ADMIN");
+        return $admin;
     }
 }
